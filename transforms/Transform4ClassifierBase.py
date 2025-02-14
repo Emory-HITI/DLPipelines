@@ -69,7 +69,7 @@ class Transform4ClassifierBase:
             mn.transforms.SpatialPadD(keys="img", spatial_size=(IMG_SIZE, IMG_SIZE), mode="constant", constant_values=0),
             mn.transforms.RandFlipD(keys="img", spatial_axis=0, prob=0.2),
             mn.transforms.RandFlipD(keys="img", spatial_axis=1, prob=0.2),
-            mn.transforms.RandGaussianNoiseD(keys="img", mean=0.0, std=0.3, prob=0.5),
+            mn.transforms.RandGaussianNoiseD(keys="img", mean=0.0, std=0.1, prob=0.5),
             mn.transforms.RandAffineD(keys="img", mode="bilinear", prob=0.5, rotate_range=0.4, scale_range=0.1, translate_range=IMG_SIZE//20, padding_mode="border"),
 
             mn.transforms.ToTensorD(keys=[*CLASSES], dtype=torch.float),            
