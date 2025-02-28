@@ -105,10 +105,40 @@ class Classifier(pl.LightningModule):
             logits = self.ema(x)
         else:
             logits = self(x)
+            
+        # Get the actual dimensions
+        num_samples = logits.shape[0]
+        num_logits = logits.shape[1] if len(logits.shape) > 1 else 1
 
-        df_logit = pd.DataFrame(logits.squeeze().cpu().numpy(), index=p, columns=[f'logit_{i}' for i in range(logits.squeeze().shape[-1])]) 
-        df_prob = pd.DataFrame(torch.sigmoid(logits.squeeze()).cpu().numpy(), index=p, columns=[f'prob_{i}' for i in range(logits.squeeze().shape[-1])]) 
-        return pd.concat([df_logit, df_prob], axis=1)
+        # Handle the case where logits may be single-dimensional
+        if len(logits.shape) == 1:
+            logits = logits.unsqueeze(1)  # Convert to shape (batch_size, 1)
+
+        # Create appropriate index
+        if p is None:
+            p = [f'sample_{i}' for i in range(num_samples)]
+
+        # Create DataFrame with correct dimensions
+        df_logit = pd.DataFrame(
+            logits.cpu().numpy(), 
+            index=p, 
+            columns=[f'logit_{i}' for i in range(num_logits)]
+        )
+
+        # Similar adjustment for probabilities
+        probs = torch.sigmoid(logits)
+        df_prob = pd.DataFrame(
+            probs.cpu().numpy(), 
+            index=p, 
+            columns=[f'prob_{i}' for i in range(num_logits)]
+        )
+
+        return pd.concat([df_logit, df_prob], axis=1)    
+
+
+        # df_logit = pd.DataFrame(logits.squeeze().cpu().numpy(), index=p, columns=[f'logit_{i}' for i in range(logits.squeeze().shape[-1])]) 
+        # df_prob = pd.DataFrame(torch.sigmoid(logits.squeeze()).cpu().numpy(), index=p, columns=[f'prob_{i}' for i in range(logits.squeeze().shape[-1])]) 
+        # return pd.concat([df_logit, df_prob], axis=1)
 
     def optimizer_step(self, *args, **kwargs):
         """
